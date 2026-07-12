@@ -83,16 +83,16 @@ test("model commands validate grammar, preserve config, inherit, and allow injec
   const cwd = "test-cwd";
    assert.deepEqual(await discoverOpenCodeModels({ cwd, platform: "linux", execFile(command, args, options, callback) {
      assert.equal(command, "opencode");
-     assert.deepEqual(args, ["models"]);
+      assert.deepEqual(args, ["models", "--verbose"]);
      assert.deepEqual(options, { encoding: "utf8", cwd });
      callback(null, "vendor/family/model\nvendor/family/model\ninvalid\nother/model\n", "");
-   } }), ["vendor/family/model", "other/model"]);
+    } }), { models: ["vendor/family/model", "other/model"], variantsByModel: {} });
    assert.deepEqual(await discoverOpenCodeModels({ cwd, platform: "win32", execFile(command, args, options, callback) {
      assert.equal(command, process.env.ComSpec || "cmd.exe");
-     assert.deepEqual(args, ["/d", "/s", "/c", "opencode models"]);
+      assert.deepEqual(args, ["/d", "/s", "/c", "opencode models --verbose"]);
      assert.deepEqual(options, { encoding: "utf8", cwd });
      callback(null, "vendor/model\n", "");
-   } }), ["vendor/model"]);
+    } }), { models: ["vendor/model"], variantsByModel: {} });
   const root = temporaryDirectory();
   writeFileSync(join(root, "opencode.jsonc"), '{\n  // preserve\n  "agent": { "other": { "keep": true }, "orchestrator": { "model": "old/model" } }\n}\n');
   configureModels({ root, assignments: { orchestrator: "inherit", "creative-guy": "vendor/model" } });
@@ -103,13 +103,13 @@ test("model commands validate grammar, preserve config, inherit, and allow injec
   assert.match(text, /vendor\/model/);
   const beforeDryRun = readFileSync(join(root, "opencode.jsonc"), "utf8");
   const dryRun = configureModels({ root, assignments: { orchestrator: "other/model" }, dryRun: true });
-  assert.deepEqual(dryRun, { dryRun: true, changed: true, models: { orchestrator: "other/model" } });
+   assert.deepEqual(dryRun, { dryRun: true, changed: true, models: { orchestrator: "other/model" }, variants: {} });
   assert.equal(readFileSync(join(root, "opencode.jsonc"), "utf8"), beforeDryRun);
    const models = ["alpha/model-1", "alpha/model-2", ...Array.from({ length: 12 }, (_, index) => `beta/model-${index + 1}`)];
    const sameOutput = { text: "", write(value) { this.text += value; } };
    const sameAnswers = ["s", "2", "2"];
    const sameAssignments = await promptForModelAssignments({ models, output: sameOutput, createInterface() { return { question() { return Promise.resolve(sameAnswers.shift()); }, close() {} }; } });
-   assert.ok(CANONICAL_ROLES.every((role) => sameAssignments[role] === "beta/model-2"));
+    assert.ok(CANONICAL_ROLES.every((role) => sameAssignments.models[role] === "beta/model-2"));
    assert.match(sameOutput.text, /Available providers: 2:\n1\. alpha \(2\)\n2\. beta \(12\)\n/);
     assert.match(sameOutput.text, /Available models from beta: 12\. Page 1 of 1:\n/);
     assert.match(sameOutput.text, /12\. beta\/model-12\n/);
@@ -124,11 +124,11 @@ test("model commands validate grammar, preserve config, inherit, and allow injec
      createInterface() { return { question(prompt) { individualPrompts.push(prompt); return Promise.resolve(individualAnswers.shift()); }, close() {} }; },
    });
    assert.equal(individualPrompts[0], "Models: [a]ll inherit, all [s]ame, [i]ndividual, [r]euse previous, [k]skip: ");
-    assert.equal(individualAssignments.orchestrator, "alpha/model-1");
-  assert.equal(individualAssignments["lead-programmer"], "manual/unknown");
-  assert.equal(individualAssignments["creative-guy"], "inherit");
-   assert.equal(individualAssignments.explorer, "beta/model-4");
-   assert.equal(individualAssignments["simple-programmer"], "beta/model-2");
+     assert.equal(individualAssignments.models.orchestrator, "alpha/model-1");
+   assert.equal(individualAssignments.models["lead-programmer"], "manual/unknown");
+   assert.equal(individualAssignments.models["creative-guy"], "inherit");
+    assert.equal(individualAssignments.models.explorer, "beta/model-4");
+    assert.equal(individualAssignments.models["simple-programmer"], "beta/model-2");
    assert.equal((individualOutput.text.match(/Available providers:/g) || []).length, CANONICAL_ROLES.length);
    const invalidOutput = { text: "", write(value) { this.text += value; } };
     const invalidAnswers = ["s", "2", "31", "3"];
@@ -143,7 +143,7 @@ test("model commands validate grammar, preserve config, inherit, and allow injec
       output: pagedOutput,
       createInterface() { return { question() { return Promise.resolve(pagedAnswers.shift()); }, close() {} }; },
     });
-    assert.ok(CANONICAL_ROLES.every((role) => pagedAssignments[role] === "gamma/model-31"));
+     assert.ok(CANONICAL_ROLES.every((role) => pagedAssignments.models[role] === "gamma/model-31"));
     assert.match(pagedOutput.text, /Available models from gamma: 62\. Page 1 of 3:\n[\s\S]*30\. gamma\/model-30\n31\. \.\.\.\n/);
     assert.match(pagedOutput.text, /Available models from gamma: 62\. Page 2 of 3:\n[\s\S]*1\. gamma\/model-31\n[\s\S]*30\. gamma\/model-60\n0\. Previous page\n31\. \.\.\.\n/);
     assert.match(pagedOutput.text, /Available models from gamma: 62\. Page 3 of 3:\n1\. gamma\/model-61\n2\. gamma\/model-62\n0\. Previous page\nAvailable models from gamma: 62\. Page 2 of 3:/);
@@ -153,8 +153,25 @@ test("model commands validate grammar, preserve config, inherit, and allow injec
       output: { write() {} },
       createInterface() { return { question() { return Promise.resolve(finalPageAnswers.shift()); }, close() {} }; },
     });
-    assert.ok(CANONICAL_ROLES.every((role) => finalPageAssignments[role] === "gamma/model-62"));
+     assert.ok(CANONICAL_ROLES.every((role) => finalPageAssignments.models[role] === "gamma/model-62"));
   rmSync(root, { recursive: true });
+});
+
+test("verbose discovery and variant assignments preserve JSONC ownership", async () => {
+  const discovered = await discoverOpenCodeModels({ cwd: "test-cwd", platform: "linux", execFile(command, args, options, callback) {
+    callback(null, 'vendor/model\n{\n  "variants": {\n    "fast": {},\n    "disabled": { "disabled": true },\n    "not-object": "no"\n  }\n}\nother/model\n', "");
+  } });
+  assert.deepEqual(discovered, { models: ["vendor/model", "other/model"], variantsByModel: { "vendor/model": ["fast"] } });
+  const answers = ["s", "1", "1", "fast", "fast", "fast", "fast", "fast"];
+  const assignments = await promptForModelAssignments({ models: discovered, createInterface() { return { question() { return Promise.resolve(answers.shift()); }, close() {} }; }, output: { write() {} } });
+  assert.ok(CANONICAL_ROLES.every((role) => assignments.models[role] === "vendor/model" && assignments.variants[role] === "fast"));
+  const merged = mergeModelAssignments('{\n  // keep\n  "agent": { "orchestrator": { "model": "old/model", "variant": "old" } }\n}\n', { models: { orchestrator: "vendor/model" }, variants: { orchestrator: "fast" } });
+  assert.match(merged.text, /\/\/ keep/);
+  assert.match(merged.text, /"variant": "fast"/);
+  assert.match(mergeModelAssignments(merged.text, { models: { orchestrator: "inherit" } }).text, /"agent"/);
+  assert.doesNotMatch(mergeModelAssignments(merged.text, { models: { orchestrator: "inherit" } }).text, /"variant"/);
+  assert.throws(() => parseCliArguments(["install", ".", "--orchestrator-variant", "fast"]), { code: "INVALID_ARGUMENT" });
+  assert.deepEqual(parseCliArguments(["configure-models", ".", "--orchestrator-model", "vendor/model", "--orchestrator-variant", "fast"]).flags.variants, { orchestrator: "fast" });
 });
 
 test("non-interactive models inherit unspecified roles and discovery failure remains controllable", async () => {

@@ -24,7 +24,7 @@ npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness 
 npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness configure-models . --non-interactive --creative-model provider/model
 ```
 
-Model flags: `--orchestrator-model`, `--lead-programmer-model`, `--creative-model`, `--explorer-model`, `--simple-programmer-model`. Interactive discovery calls `opencode models`; discovery failure still permits inherit, manual IDs, or skip. Unknown manual IDs require confirmation. Existing assignments can be reused. `--non-interactive` uses supplied values only and makes fresh unspecified roles inherit. `--skip-models` and model flags conflict.
+Model flags: `--orchestrator-model`, `--lead-programmer-model`, `--creative-model`, `--explorer-model`, `--simple-programmer-model`. Matching `--*-variant` flags require matching role model flags. Interactive discovery calls `opencode models --verbose`; known selected models with available variants prompt for variant or inherit. Discovery failure still permits inherit, manual IDs, or skip. Unknown manual IDs require confirmation. Existing assignments can be reused. `--non-interactive` uses supplied values only, does not run discovery, and makes fresh unspecified roles inherit. `--skip-models` conflicts with model and variant flags.
 
 ## Updates, conflicts, backups
 

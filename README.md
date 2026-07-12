@@ -26,7 +26,7 @@ npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness 
 npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness install . --non-interactive --orchestrator-model provider/model
 ```
 
-Available flags: `--orchestrator-model`, `--lead-programmer-model`, `--creative-model`, `--explorer-model`, and `--simple-programmer-model`. Model IDs use `provider/model`. Interactive flow discovers models, preserves existing assignments, and supports inherit, one model for all roles, individual values, reuse, and manual IDs. `--skip-models` cannot combine with model flags. `--set-default` sets `orchestrator` default agent.
+Available model flags: `--orchestrator-model`, `--lead-programmer-model`, `--creative-model`, `--explorer-model`, and `--simple-programmer-model`. Matching variant flags replace `-model` with `-variant`; each variant flag requires its role's model flag. Model IDs use `provider/model`. Interactive flow uses `opencode models --verbose`, preserves existing assignments, and prompts for available variants after known model selection. `--skip-models` cannot combine with model or variant flags. `--set-default` sets `orchestrator` default agent.
 
 ## Operations
 
