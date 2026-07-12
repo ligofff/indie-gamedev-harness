@@ -1,36 +1,46 @@
-# Install
+# Install and Maintain
 
-Use this guide when user asks to install this harness into an OpenCode project.
+All commands run from target project and install project-local files only. No global OpenCode configuration changes.
 
-## Node Requirement
+## Commands
 
-Node 18+ is required only to run bundled `npm test` validator. OpenCode harness itself installs no package dependency.
+```sh
+npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness install .
+npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness update .
+npx --yes --package=github:ligofff/indie-gamedev-harness#v0.2.0 gamedev-harness install .
+npx --yes --package=github:ligofff/indie-gamedev-harness#v0.2.0 gamedev-harness update .
+```
 
-## Before Changing Files
+`master` means current repository branch. `v0.2.0` is example release tag; replace it with desired tag. Use tags for repeatable team installs.
 
-1. Confirm target runtime is OpenCode.
-2. Inspect existing project or global OpenCode config, agents, skills, permissions, and instructions.
-3. Ask whether installation is project-local or global when user did not say.
-4. Check which models are available. Do not assume provider or model ID.
+Install preserves existing JSON or JSONC configuration, permissions, default agent unless `--set-default`, and unrelated agents. It copies canonical harness files, records hashes, and adopts matching existing files. Restart OpenCode when finished.
 
-## Install
+## Model process
 
-1. Copy five files from `.opencode/agents/` and needed directories from `.opencode/skills/` into target's native OpenCode locations.
-2. Merge `opencode.json` fields. Preserve unrelated user configuration and permissions.
-3. Set `orchestrator` as default primary agent only when target has no intentional primary-agent choice.
-4. Assign models from user's available providers:
-   - strongest reasoning model: orchestrator
-   - strong economical coding model: lead-programmer
-   - strong creative/reasoning model: creative-guy
-   - inexpensive model with practical context: explorer
-   - inexpensive reliable editing model: simple-programmer
-5. Validate config, agent discovery, and skill discovery.
-6. Tell user to restart OpenCode. It does not hot-reload config-time files.
+Use `configure-models` to edit only model configuration:
 
-## Report
+```sh
+npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness configure-models .
+npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness configure-models . --non-interactive --creative-model provider/model
+```
 
-Report changed files, preserved settings, selected models, validation result, optional tools not installed, and rollback steps.
+Model flags: `--orchestrator-model`, `--lead-programmer-model`, `--creative-model`, `--explorer-model`, `--simple-programmer-model`. Interactive discovery calls `opencode models`; discovery failure still permits inherit, manual IDs, or skip. Unknown manual IDs require confirmation. Existing assignments can be reused. `--non-interactive` uses supplied values only and makes fresh unspecified roles inherit. `--skip-models` and model flags conflict.
 
-## Remove
+## Updates, conflicts, backups
 
-Remove only files installed by this harness and configuration entries that reference them. Preserve user-modified files unless user explicitly approves deletion. Validate config after removal.
+```sh
+npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness update . --dry-run
+npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness update . --force
+npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness update . --all --yes
+```
+
+Update preserves user modifications. Conflicts create `.harness-new` candidate files. `--force` backs up replaced files with `.harness-backup-...`; review backups and candidates before deletion. `--all` discovers harnesses and prompts once unless `--yes`. Noninteractive `--all` requires `--yes`.
+
+## Uninstall, teams, migration
+
+```sh
+npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness validate .
+npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness uninstall .
+```
+
+Teams should commit project-local harness changes and coordinate conflict resolution. For manual migration or adoption, back up `opencode.json` or `opencode.jsonc` and `.opencode` first. Use `install . --force` only after reviewing collision backups. Uninstall preserves modified files unless forced. Restart OpenCode after every configuration or harness change.

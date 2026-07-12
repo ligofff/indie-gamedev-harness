@@ -1,12 +1,33 @@
 {
   "name": "indie-gamedev-harness",
-  "version": "0.1.0",
-  "description": "Small OpenCode harness for solo game development.",
+  "version": "0.2.0",
+  "description": "Project-local OpenCode harness for indie game development.",
+  "type": "module",
+  "bin": {
+    "gamedev-harness": "./bin/gamedev-harness.mjs"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    ".opencode/agents/",
+    ".opencode/skills/",
+    "AGENTS.md",
+    "INSTALL.md",
+    "opencode.json"
+  ],
   "scripts": {
-    "test": "node tests/validate.mjs"
+    "test": "node --test tests/foundation.test.mjs tests/package.test.mjs && node tests/validate.mjs"
   },
   "engines": {
     "node": ">=18"
   },
-  "license": "MIT"
+  "repository": "git+https://github.com/ligofff/indie-gamedev-harness.git",
+  "bugs": {
+    "url": "https://github.com/ligofff/indie-gamedev-harness/issues"
+  },
+  "homepage": "https://github.com/ligofff/indie-gamedev-harness#readme",
+  "license": "MIT",
+  "dependencies": {
+    "jsonc-parser": "^3.3.1"
+  }
 }

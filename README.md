@@ -1,38 +1,39 @@
 # Indie Gamedev Harness
 
-Small OpenCode harness for solo game development.
+Project-local OpenCode harness for indie game work. It installs five behavior agents and reusable skills into target project. No global installation.
 
-It has five behavior agents and reusable gamedev skills. No modules, bundled external tool servers,
-alternate harness adapters, command catalog, or required project structure.
+## Install
 
-## Roles
+Run from target project directory:
 
-- `orchestrator`: talks with user, plans, delegates, and summarizes.
-- `lead-programmer`: makes technical decisions and prepares exact implementation work.
-- `simple-programmer`: applies bounded edits without inventing design or architecture.
-- `explorer`: read-only codebase research with evidence.
-- `creative-guy`: game design, narrative, art, audio, UX, and creative utility work.
-
-## Use
-
-Run OpenCode in a project containing this harness. Start with normal language; the
-orchestrator routes work and loads relevant skills only when needed.
-
-Example:
-
-```text
-Add coyote time to jumping. Reuse current movement settings and add smallest regression check.
+```sh
+npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness install .
+npx --yes --package=github:ligofff/indie-gamedev-harness#v0.2.0 gamedev-harness install .
 ```
 
-See `INSTALL.md` for agent-readable installation and removal guidance.
+`master` uses current repository branch. Tag such as `v0.2.0` uses fixed release. Both commands modify only project-local files.
 
-## Principles
+## Update
 
-- Preserve project conventions and sources of truth.
-- Reuse before writing.
-- Delete before adding.
-- Fix root causes.
-- Keep concrete values in game assets, settings, or code, not duplicated docs.
-- Verify non-trivial changes.
+```sh
+npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness update .
+npx --yes --package=github:ligofff/indie-gamedev-harness#v0.2.0 gamedev-harness update .
+npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness update . --all --yes
+```
 
-Licensed under MIT.
+Updates preserve modified files and write `.harness-new` candidates for conflicts. `--force` backs up replaced files. Use `--dry-run` to inspect without mutation. Restart OpenCode after install, update, uninstall, or model changes.
+
+## Models
+
+```sh
+npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness configure-models .
+npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness install . --non-interactive --orchestrator-model provider/model
+```
+
+Available flags: `--orchestrator-model`, `--lead-programmer-model`, `--creative-model`, `--explorer-model`, and `--simple-programmer-model`. Model IDs use `provider/model`. Interactive flow discovers models, preserves existing assignments, and supports inherit, one model for all roles, individual values, reuse, and manual IDs. `--skip-models` cannot combine with model flags. `--set-default` sets `orchestrator` default agent.
+
+## Operations
+
+`status`, `validate`, and `uninstall` operate on project-local harness. Uninstall preserves modified files unless `--force`; force creates backups. Teams should commit installed `.opencode` harness files and resolve update candidates together. For manual migration or adoption, back up target config and harness files first, run install with `--force` only after review, then restart OpenCode.
+
+See [INSTALL.md](INSTALL.md) for full command and recovery guidance.
