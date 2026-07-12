@@ -105,34 +105,34 @@ test("model commands validate grammar, preserve config, inherit, and allow injec
   const dryRun = configureModels({ root, assignments: { orchestrator: "other/model" }, dryRun: true });
   assert.deepEqual(dryRun, { dryRun: true, changed: true, models: { orchestrator: "other/model" } });
   assert.equal(readFileSync(join(root, "opencode.jsonc"), "utf8"), beforeDryRun);
-  const models = Array.from({ length: 12 }, (_, index) => `vendor/model-${index + 1}`);
-  const sameOutput = { text: "", write(value) { this.text += value; } };
-  const sameAnswers = ["s", "2"];
-  const sameAssignments = await promptForModelAssignments({ models, output: sameOutput, createInterface() { return { question() { return Promise.resolve(sameAnswers.shift()); }, close() {} }; } });
-  assert.ok(CANONICAL_ROLES.every((role) => sameAssignments[role] === "vendor/model-2"));
-  assert.match(sameOutput.text, /Available models: 12\. First 10:\n/);
-  assert.match(sameOutput.text, /10\. vendor\/model-10\n/);
-  assert.doesNotMatch(sameOutput.text, /vendor\/model-11|vendor\/model-12/);
-  const individualOutput = { text: "", write(value) { this.text += value; } };
-  const individualAnswers = ["i", "1", "manual/unknown", "inherit", "", "2", "y"];
+   const models = ["alpha/model-1", "alpha/model-2", ...Array.from({ length: 12 }, (_, index) => `beta/model-${index + 1}`)];
+   const sameOutput = { text: "", write(value) { this.text += value; } };
+   const sameAnswers = ["s", "2", "2"];
+   const sameAssignments = await promptForModelAssignments({ models, output: sameOutput, createInterface() { return { question() { return Promise.resolve(sameAnswers.shift()); }, close() {} }; } });
+   assert.ok(CANONICAL_ROLES.every((role) => sameAssignments[role] === "beta/model-2"));
+   assert.match(sameOutput.text, /Available providers: 2:\n1\. alpha \(2\)\n2\. beta \(12\)\n/);
+   assert.match(sameOutput.text, /Available models from beta: 12\. First 10:\n/);
+   assert.match(sameOutput.text, /10\. beta\/model-10\n/);
+   assert.doesNotMatch(sameOutput.text, /beta\/model-11|beta\/model-12/);
+   const individualOutput = { text: "", write(value) { this.text += value; } };
+   const individualAnswers = ["i", "1", "1", "manual", "manual/unknown", "inherit", "", "2", "2", "y"];
   const individualAssignments = await promptForModelAssignments({
     models,
-    previousAssignments: { explorer: "vendor/model-4" },
+     previousAssignments: { explorer: "beta/model-4" },
     output: individualOutput,
     createInterface() { return { question() { return Promise.resolve(individualAnswers.shift()); }, close() {} }; },
   });
-  assert.equal(individualAssignments.orchestrator, "vendor/model-1");
+   assert.equal(individualAssignments.orchestrator, "alpha/model-1");
   assert.equal(individualAssignments["lead-programmer"], "manual/unknown");
   assert.equal(individualAssignments["creative-guy"], "inherit");
-  assert.equal(individualAssignments.explorer, "vendor/model-4");
-  assert.equal(individualAssignments["simple-programmer"], "vendor/model-2");
-  assert.match(individualOutput.text, /Available models: 12\. First 10:\n/);
-  assert.equal((individualOutput.text.match(/Available models:/g) || []).length, 1);
-  const invalidOutput = { text: "", write(value) { this.text += value; } };
-  const invalidAnswers = ["s", "11", "3"];
+   assert.equal(individualAssignments.explorer, "beta/model-4");
+   assert.equal(individualAssignments["simple-programmer"], "beta/model-2");
+   assert.equal((individualOutput.text.match(/Available providers:/g) || []).length, CANONICAL_ROLES.length);
+   const invalidOutput = { text: "", write(value) { this.text += value; } };
+   const invalidAnswers = ["s", "2", "11", "3"];
   const invalidPrompts = [];
   await promptForModelAssignments({ models, output: invalidOutput, createInterface() { return { question(prompt) { invalidPrompts.push(prompt); return Promise.resolve(invalidAnswers.shift()); }, close() {} }; } });
-  assert.ok(invalidPrompts.includes("Invalid model. Try again: "));
+   assert.ok(invalidPrompts.includes("Invalid model. Try again: "));
   rmSync(root, { recursive: true });
 });
 
