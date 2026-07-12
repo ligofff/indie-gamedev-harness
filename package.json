@@ -1,0 +1,12 @@
+{
+  "name": "indie-gamedev-harness",
+  "version": "0.1.0",
+  "description": "Small OpenCode harness for solo game development.",
+  "scripts": {
+    "test": "node tests/validate.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
