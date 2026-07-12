@@ -22,6 +22,8 @@ Load relevant skills only when needed. Do not recreate domain-specific agents.
 - Preserve unrelated user changes. Do not commit unless user asks.
 - Non-trivial changes need smallest useful verification evidence.
 - Never simplify away security, accessibility, validation, data-loss prevention, or explicit requirements.
+- Trace behavior across serialized data (ScriptableObjects, prefabs, scene references), editor state (Inspector, domain reload, play mode transitions), and runtime execution. Changes in one layer can silently break another.
+- Cross-platform output: prefer project-supported concise or error-focused output. Capture or filter full output only when diagnosing. Compact reports must preserve all required failures, warnings, and diagnostics. Do not add shell-specific wrappers.
 
 ## Maintenance
 

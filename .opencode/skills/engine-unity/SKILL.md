@@ -24,3 +24,7 @@ Verify Unity version, render pipeline, input system, and package set before choo
 - Use Burst/ECS only for measured data-parallel work; structural changes use command buffers with clear playback ownership.
 - Keep shader, VFX, and UI implementation aligned with active render pipeline and supported platforms.
 - Validate serialized data, prefab references, input actions, and build settings through Unity-native tooling.
+- Serialized field renames or type changes break existing prefab and scene references. Preserve field identity or provide explicit migration. `[FormerlySerializedAs]` handles renames but not type changes.
+- Domain reload destroys and recreates static state, `[InitializeOnLoad]` callbacks, and editor windows. Do not assume static state survives reload. Test behavior after domain reload and play-mode exit.
+- `[ExecuteInEditMode]` and `[ExecuteAlways]` run outside play mode; guard runtime-only code paths. Editor-only code must not ship in player builds — use `#if UNITY_EDITOR` or `UNITY_EDITOR` defines.
+- Prefab overrides, nested prefabs, and prefab variants carry serialized differences. Changes to base prefabs propagate unless overridden; verify override behavior after base edits.

@@ -15,6 +15,7 @@ description: Use when diagnosing bugs, planning or reviewing tests, validating p
 - Classify severity separately from priority. A reproducible report includes environment, prerequisites, steps, actual result, expected result, evidence, and impact.
 - Treat flaky checks as a reliability defect; gather repeat evidence before suppressing them.
 - Define measurable pass thresholds before testing: correctness tolerances, frame-time or memory budgets, acceptable error rates, and target-device coverage.
+- In engines with domain reload or editor lifecycle, test fixtures may be destroyed and recreated across reloads, play-mode entry/exit, and assembly recompilation. Verify test setup and teardown survive these transitions. Static state, singletons, and `[InitializeOnLoad]` callbacks need explicit reset in test teardown.
 - Test formula boundaries and invariants: zero, one, minimum, maximum, just-inside, just-outside, overflow or underflow, rounding, invalid input, and repeated application.
 - Treat zero-assertion tests and tests without a meaningful observable boundary check as incomplete, not passing coverage.
 - Confirm suspected flakiness with repeated equivalent runs using project threshold; quarantine only confirmed flakes, visibly, temporarily, with owner and remediation path. Never silently suppress failure.
@@ -37,3 +38,10 @@ description: Use when diagnosing bugs, planning or reviewing tests, validating p
 - Classify bottleneck: CPU, GPU, memory, loading, IO, network, allocation, or contention.
 - Change one measured cause at a time and compare before/after against a budget. Avoid claims based only on editor performance.
 - Preserve correctness, accessibility, and visual readability when applying performance tiers or fallbacks.
+
+## Cross-Platform Output
+
+- Prefer project-supported concise or error-focused output for verification and CI.
+- Capture or filter full tool/engine output only when actively diagnosing a failure.
+- Compact reports must preserve all required failures, warnings, and diagnostics — never omit required signal for brevity.
+- Do not add shell-specific wrappers (bash, PowerShell, cmd) around verification commands.

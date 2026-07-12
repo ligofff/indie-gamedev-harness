@@ -18,6 +18,7 @@ Files:
 
 Flow:
 - entry -> calls -> state changes -> output
+- For game engines, also trace: serialized data flow (ScriptableObjects, prefabs, scene refs), editor state transitions (domain reload, play mode, Inspector), and runtime execution paths.
 
 Callers and dependencies:
 - symbol -> callers, imports, or consumers

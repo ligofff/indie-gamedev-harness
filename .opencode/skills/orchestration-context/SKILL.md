@@ -8,7 +8,7 @@ description: Use when delegating work, gathering context, planning multi-step wo
 ## Delegation
 
 - Delegate by behavior, not subject label. Use explorer for evidence, lead-programmer for technical decisions, simple-programmer for bounded edits, and creative-guy for creative reasoning.
-- Subagents lack conversation history. Every delegation brief must be self-contained: goal, current evidence and decisions, exact scope and exclusions, relevant files or project-native facts, constraints, expected observable result, return format, and verification expectation.
+- Subagents lack conversation history. Every delegation brief must be self-contained: goal, current evidence and decisions, exact scope and exclusions, relevant files or project-native facts, constraints, expected observable result, return format, and verification expectation. State explicit facts the brief assumes (Unity version, render pipeline, existing patterns, asset paths) and mark uncertain assumptions so the delegatee can validate or flag them.
 - Parallelize only independent work. Sequence work when a later decision depends on earlier evidence.
 - Do not delegate a known one-file read merely to create ceremony.
 - A blocked agent returns evidence, impact, completed safe work, viable dependency choices with consequences, and smallest decision needed. Do not guess past a blocking dependency.
