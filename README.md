@@ -8,16 +8,12 @@ Run from target project directory:
 
 ```sh
 npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness install .
-npx --yes --package=github:ligofff/indie-gamedev-harness#v0.2.0 gamedev-harness install .
 ```
-
-`master` uses current repository branch. Tag such as `v0.2.0` uses fixed release. Both commands modify only project-local files.
 
 ## Update
 
 ```sh
 npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness update .
-npx --yes --package=github:ligofff/indie-gamedev-harness#v0.2.0 gamedev-harness update .
 npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness update . --all --yes
 ```
 
