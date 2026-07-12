@@ -157,14 +157,28 @@ test("model commands validate grammar, preserve config, inherit, and allow injec
   rmSync(root, { recursive: true });
 });
 
-test("verbose discovery and variant assignments preserve JSONC ownership", async () => {
+test("variant selection is inline, numbered, and preserves JSONC ownership", async () => {
   const discovered = await discoverOpenCodeModels({ cwd: "test-cwd", platform: "linux", execFile(command, args, options, callback) {
     callback(null, 'vendor/model\n{\n  "variants": {\n    "fast": {},\n    "disabled": { "disabled": true },\n    "not-object": "no"\n  }\n}\nother/model\n', "");
   } });
   assert.deepEqual(discovered, { models: ["vendor/model", "other/model"], variantsByModel: { "vendor/model": ["fast"] } });
-  const answers = ["s", "1", "1", "fast", "fast", "fast", "fast", "fast"];
-  const assignments = await promptForModelAssignments({ models: discovered, createInterface() { return { question() { return Promise.resolve(answers.shift()); }, close() {} }; }, output: { write() {} } });
-  assert.ok(CANONICAL_ROLES.every((role) => assignments.models[role] === "vendor/model" && assignments.variants[role] === "fast"));
+  const answers = ["s", "1", "1", "fast", "0", "1", "inherit", "1", "1", "1"];
+  const prompts = [];
+  const output = { text: "", write(value) { this.text += value; } };
+  const assignments = await promptForModelAssignments({ models: { models: discovered.models, variantsByModel: { "vendor/model": ["fast", "accurate"] } }, createInterface() { return { question(prompt) { prompts.push(prompt); return Promise.resolve(answers.shift()); }, close() {} }; }, output });
+  assert.ok(CANONICAL_ROLES.every((role) => assignments.models[role] === "vendor/model"));
+  assert.equal(assignments.variants.orchestrator, "fast");
+  assert.equal(assignments.variants["lead-programmer"], "inherit");
+  assert.ok(CANONICAL_ROLES.filter((role) => !["orchestrator", "lead-programmer"].includes(role)).every((role) => assignments.variants[role] === "fast"));
+  assert.equal(prompts[3], "orchestrator variant [inherit]: ");
+  assert.equal(prompts[4], "Invalid variant. Try again: ");
+  assert.equal(prompts[5], "Invalid variant. Try again: ");
+  assert.match(output.text, /Available variants: 2:\n1\. fast\n2\. accurate\n/);
+  const individualAnswers = ["i", "1", "1", "1", "inherit", "inherit", "inherit", "inherit"];
+  const individualPrompts = [];
+  await promptForModelAssignments({ models: { models: discovered.models, variantsByModel: { "vendor/model": ["fast"] } }, createInterface() { return { question(prompt) { individualPrompts.push(prompt); return Promise.resolve(individualAnswers.shift()); }, close() {} }; }, output: { write() {} } });
+  assert.equal(individualPrompts[3], "orchestrator variant [inherit]: ");
+  assert.equal(individualPrompts[4], "Provider [manual/inherit]: ");
   const merged = mergeModelAssignments('{\n  // keep\n  "agent": { "orchestrator": { "model": "old/model", "variant": "old" } }\n}\n', { models: { orchestrator: "vendor/model" }, variants: { orchestrator: "fast" } });
   assert.match(merged.text, /\/\/ keep/);
   assert.match(merged.text, /"variant": "fast"/);
