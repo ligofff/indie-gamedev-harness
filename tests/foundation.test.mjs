@@ -81,12 +81,18 @@ test("model commands validate grammar, preserve config, inherit, and allow injec
   assert.throws(() => parseCliArguments(["install", ".", "--skip-models", "--orchestrator-model", "vendor/model"]), { code: "INVALID_ARGUMENT" });
   assert.throws(() => parseCliArguments(["install", ".", "--noninteractive"]), { code: "INVALID_ARGUMENT" });
   const cwd = "test-cwd";
-  assert.deepEqual(await discoverOpenCodeModels({ cwd, execFile(command, args, options, callback) {
-    assert.equal(command, "opencode");
-    assert.deepEqual(args, ["models"]);
-    assert.deepEqual(options, { encoding: "utf8", cwd });
-    callback(null, "vendor/family/model\nvendor/family/model\ninvalid\nother/model\n", "");
-  } }), ["vendor/family/model", "other/model"]);
+   assert.deepEqual(await discoverOpenCodeModels({ cwd, platform: "linux", execFile(command, args, options, callback) {
+     assert.equal(command, "opencode");
+     assert.deepEqual(args, ["models"]);
+     assert.deepEqual(options, { encoding: "utf8", cwd });
+     callback(null, "vendor/family/model\nvendor/family/model\ninvalid\nother/model\n", "");
+   } }), ["vendor/family/model", "other/model"]);
+   assert.deepEqual(await discoverOpenCodeModels({ cwd, platform: "win32", execFile(command, args, options, callback) {
+     assert.equal(command, process.env.ComSpec || "cmd.exe");
+     assert.deepEqual(args, ["/d", "/s", "/c", "opencode models"]);
+     assert.deepEqual(options, { encoding: "utf8", cwd });
+     callback(null, "vendor/model\n", "");
+   } }), ["vendor/model"]);
   const root = temporaryDirectory();
   writeFileSync(join(root, "opencode.jsonc"), '{\n  // preserve\n  "agent": { "other": { "keep": true }, "orchestrator": { "model": "old/model" } }\n}\n');
   configureModels({ root, assignments: { orchestrator: "inherit", "creative-guy": "vendor/model" } });
