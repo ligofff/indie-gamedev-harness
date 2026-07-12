@@ -7,8 +7,6 @@ All commands run from target project and install project-local files only. No gl
 ```sh
 npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness install .
 npx --yes --package=github:ligofff/indie-gamedev-harness#master gamedev-harness update .
-npx --yes --package=github:ligofff/indie-gamedev-harness#v0.2.0 gamedev-harness install .
-npx --yes --package=github:ligofff/indie-gamedev-harness#v0.2.0 gamedev-harness update .
 ```
 
 `master` means current repository branch. `v0.2.0` is example release tag; replace it with desired tag. Use tags for repeatable team installs.
