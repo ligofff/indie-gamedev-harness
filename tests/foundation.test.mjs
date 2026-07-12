@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { PACKAGE_VERSION, parseCliArguments, runCli } from "../lib/cli.mjs";
-import { mergeHarnessConfig, mergeModelAssignments, readOpenCodeConfig } from "../lib/config.mjs";
+import { isValidModelId, mergeHarnessConfig, mergeModelAssignments, readOpenCodeConfig } from "../lib/config.mjs";
 import { configureModels, discoverOpenCodeModels, promptForModelAssignments } from "../lib/configure-models.mjs";
 import { atomicWriteFile } from "../lib/filesystem.mjs";
 import { installHarness } from "../lib/install.mjs";
@@ -68,7 +68,11 @@ test("config merge preserves JSONC, ownership, malformed permissions, and models
   assert.match(assigned.text, /"other"/);
   const inherited = mergeModelAssignments(assigned.text, { orchestrator: "inherit" });
   assert.doesNotMatch(inherited.text, /"new\/model"/);
+  assert.equal(isValidModelId("vendor/family/model"), true);
+  assert.equal(isValidModelId("vendor//model"), false);
+  assert.equal(isValidModelId("vendor/model/"), false);
   assert.throws(() => mergeModelAssignments(text, { orchestrator: "bad" }), { code: "INVALID_ARGUMENT" });
+  assert.match(mergeModelAssignments(text, { orchestrator: "vendor/family/model" }).text, /vendor\/family\/model/);
 });
 
 test("model commands validate grammar, preserve config, inherit, and allow injected discovery", async () => {
@@ -76,7 +80,13 @@ test("model commands validate grammar, preserve config, inherit, and allow injec
   assert.throws(() => parseCliArguments(["update", ".", "--orchestrator-model", "vendor/model"]), { code: "INVALID_ARGUMENT" });
   assert.throws(() => parseCliArguments(["install", ".", "--skip-models", "--orchestrator-model", "vendor/model"]), { code: "INVALID_ARGUMENT" });
   assert.throws(() => parseCliArguments(["install", ".", "--noninteractive"]), { code: "INVALID_ARGUMENT" });
-  assert.deepEqual(await discoverOpenCodeModels({ execFile(command, args, options, callback) { callback(null, "vendor/model\nvendor/model\ninvalid\nother/model\n", ""); } }), ["vendor/model", "other/model"]);
+  const cwd = "test-cwd";
+  assert.deepEqual(await discoverOpenCodeModels({ cwd, execFile(command, args, options, callback) {
+    assert.equal(command, "opencode");
+    assert.deepEqual(args, ["models"]);
+    assert.deepEqual(options, { encoding: "utf8", cwd });
+    callback(null, "vendor/family/model\nvendor/family/model\ninvalid\nother/model\n", "");
+  } }), ["vendor/family/model", "other/model"]);
   const root = temporaryDirectory();
   writeFileSync(join(root, "opencode.jsonc"), '{\n  // preserve\n  "agent": { "other": { "keep": true }, "orchestrator": { "model": "old/model" } }\n}\n');
   configureModels({ root, assignments: { orchestrator: "inherit", "creative-guy": "vendor/model" } });
@@ -105,6 +115,17 @@ test("non-interactive models inherit unspecified roles and discovery failure rem
   assert.equal(config.agent.orchestrator.model, "vendor/model");
   assert.equal(config.agent["creative-guy"]?.model, undefined);
   await assert.rejects(discoverOpenCodeModels({ execFile(command, args, options, callback) { callback(new Error("missing")); } }));
+  rmSync(root, { recursive: true });
+});
+
+test("CLI reports controlled model discovery diagnostics", async () => {
+  const root = temporaryDirectory();
+  const output = { text: "", write(value) { this.text += value; } };
+  const errors = { text: "", write(value) { this.text += value; } };
+  const missing = new Error("missing");
+  missing.code = "ENOENT";
+  assert.equal(await runCli(["configure-models", root, "--yes"], { stdout: output, stderr: errors }, { discoverOpenCodeModels: async ({ cwd }) => { assert.equal(cwd, root); throw missing; } }), 0);
+  assert.equal(errors.text, "OpenCode was not found on PATH. Install OpenCode or add it to PATH; choose inherit, manual model IDs, or skip.\n");
   rmSync(root, { recursive: true });
 });
 
