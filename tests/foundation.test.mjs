@@ -215,6 +215,43 @@ test("install preserves existing JSONC and collision has no partial writes", () 
   rmSync(collisionRoot, { recursive: true });
 });
 
+test("reinstall preserves config ownership and merges selected models without dry-run writes", () => {
+  const root = temporaryDirectory();
+  writeFileSync(join(root, "opencode.jsonc"), '{\n  // preserve\n  "agent": { "other": { "keep": true } }\n}\n');
+  installHarness({ root, packageVersion: PACKAGE_VERSION });
+  const manifestPath = join(root, ".opencode/harness/manifest.json");
+  const beforeManifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  const before = readFileSync(join(root, "opencode.jsonc"), "utf8");
+  const dry = installHarness({ root, flags: { models: { orchestrator: "vendor/model" } }, packageVersion: PACKAGE_VERSION, dryRun: true });
+  assert.equal(dry.reinstalled, true);
+  assert.equal(dry.configChanged, true);
+  assert.equal(readFileSync(join(root, "opencode.jsonc"), "utf8"), before);
+  assert.deepEqual(JSON.parse(readFileSync(manifestPath, "utf8")), beforeManifest);
+  const result = installHarness({ root, flags: { models: { orchestrator: "vendor/model" } }, packageVersion: PACKAGE_VERSION });
+  assert.equal(result.reinstalled, true);
+  assert.equal(result.configChanged, true);
+  const config = readFileSync(join(root, "opencode.jsonc"), "utf8");
+  assert.match(config, /\/\/ preserve/);
+  assert.match(config, /"other"/);
+  assert.match(config, /vendor\/model/);
+  const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  assert.equal(manifest.configChanges.instructionAdded, beforeManifest.configChanges.instructionAdded);
+  assert.equal(manifest.configChanges.modelsSetByInstaller.orchestrator, "vendor/model");
+  rmSync(root, { recursive: true });
+});
+
+test("CLI distinguishes fresh installs from reinstalls", async () => {
+  const root = temporaryDirectory();
+  const output = { text: "", write(value) { this.text += value; } };
+  const errors = { text: "", write(value) { this.text += value; } };
+  assert.equal(await runCli(["install", root, "--non-interactive"], { stdout: output, stderr: errors }), 0);
+  assert.equal(output.text, `install: ok; copied ${listTemplateFiles().length}; adopted 0\n`);
+  output.text = "";
+  assert.equal(await runCli(["install", root, "--non-interactive"], { stdout: output, stderr: errors }), 0);
+  assert.equal(output.text, "install: ok; reinstalled\n");
+  rmSync(root, { recursive: true });
+});
+
 test("install restores files and config after validation failure", () => {
   const root = temporaryDirectory();
   const config = '{"agent":[]}\n';
