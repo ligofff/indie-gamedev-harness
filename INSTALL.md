@@ -24,9 +24,8 @@ Node 18+ is required only to run bundled `npm test` validator. OpenCode harness 
    - strong creative/reasoning model: creative-guy
    - inexpensive model with practical context: explorer
    - inexpensive reliable editing model: simple-programmer
-5. Install no MCP server, package, plugin, engine tool, or alternate-harness adapter.
-6. Validate config, agent discovery, and skill discovery.
-7. Tell user to restart OpenCode. It does not hot-reload config-time files.
+5. Validate config, agent discovery, and skill discovery.
+6. Tell user to restart OpenCode. It does not hot-reload config-time files.
 
 ## Report
 
