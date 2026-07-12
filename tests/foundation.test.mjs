@@ -111,9 +111,9 @@ test("model commands validate grammar, preserve config, inherit, and allow injec
    const sameAssignments = await promptForModelAssignments({ models, output: sameOutput, createInterface() { return { question() { return Promise.resolve(sameAnswers.shift()); }, close() {} }; } });
    assert.ok(CANONICAL_ROLES.every((role) => sameAssignments[role] === "beta/model-2"));
    assert.match(sameOutput.text, /Available providers: 2:\n1\. alpha \(2\)\n2\. beta \(12\)\n/);
-   assert.match(sameOutput.text, /Available models from beta: 12\. First 10:\n/);
-   assert.match(sameOutput.text, /10\. beta\/model-10\n/);
-   assert.doesNotMatch(sameOutput.text, /beta\/model-11|beta\/model-12/);
+    assert.match(sameOutput.text, /Available models from beta: 12\. Page 1 of 1:\n/);
+    assert.match(sameOutput.text, /12\. beta\/model-12\n/);
+    assert.doesNotMatch(sameOutput.text, /31\. \.\.\./);
    const individualOutput = { text: "", write(value) { this.text += value; } };
    const individualAnswers = ["i", "1", "1", "manual", "manual/unknown", "inherit", "", "2", "2", "y"];
   const individualAssignments = await promptForModelAssignments({
@@ -129,10 +129,29 @@ test("model commands validate grammar, preserve config, inherit, and allow injec
    assert.equal(individualAssignments["simple-programmer"], "beta/model-2");
    assert.equal((individualOutput.text.match(/Available providers:/g) || []).length, CANONICAL_ROLES.length);
    const invalidOutput = { text: "", write(value) { this.text += value; } };
-   const invalidAnswers = ["s", "2", "11", "3"];
+    const invalidAnswers = ["s", "2", "31", "3"];
   const invalidPrompts = [];
   await promptForModelAssignments({ models, output: invalidOutput, createInterface() { return { question(prompt) { invalidPrompts.push(prompt); return Promise.resolve(invalidAnswers.shift()); }, close() {} }; } });
-   assert.ok(invalidPrompts.includes("Invalid model. Try again: "));
+    assert.ok(invalidPrompts.includes("Invalid model. Try again: "));
+    const pagedModels = [...Array.from({ length: 62 }, (_, index) => `gamma/model-${index + 1}`)];
+    const pagedOutput = { text: "", write(value) { this.text += value; } };
+    const pagedAnswers = ["s", "1", "31", "31", "0", "1"];
+    const pagedAssignments = await promptForModelAssignments({
+      models: pagedModels,
+      output: pagedOutput,
+      createInterface() { return { question() { return Promise.resolve(pagedAnswers.shift()); }, close() {} }; },
+    });
+    assert.ok(CANONICAL_ROLES.every((role) => pagedAssignments[role] === "gamma/model-31"));
+    assert.match(pagedOutput.text, /Available models from gamma: 62\. Page 1 of 3:\n[\s\S]*30\. gamma\/model-30\n31\. \.\.\.\n/);
+    assert.match(pagedOutput.text, /Available models from gamma: 62\. Page 2 of 3:\n[\s\S]*1\. gamma\/model-31\n[\s\S]*30\. gamma\/model-60\n0\. Previous page\n31\. \.\.\.\n/);
+    assert.match(pagedOutput.text, /Available models from gamma: 62\. Page 3 of 3:\n1\. gamma\/model-61\n2\. gamma\/model-62\n0\. Previous page\nAvailable models from gamma: 62\. Page 2 of 3:/);
+    const finalPageAnswers = ["s", "1", "31", "31", "2"];
+    const finalPageAssignments = await promptForModelAssignments({
+      models: pagedModels,
+      output: { write() {} },
+      createInterface() { return { question() { return Promise.resolve(finalPageAnswers.shift()); }, close() {} }; },
+    });
+    assert.ok(CANONICAL_ROLES.every((role) => finalPageAssignments[role] === "gamma/model-62"));
   rmSync(root, { recursive: true });
 });
 
