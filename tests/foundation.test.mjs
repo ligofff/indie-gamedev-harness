@@ -114,15 +114,17 @@ test("model commands validate grammar, preserve config, inherit, and allow injec
     assert.match(sameOutput.text, /Available models from beta: 12\. Page 1 of 1:\n/);
     assert.match(sameOutput.text, /12\. beta\/model-12\n/);
     assert.doesNotMatch(sameOutput.text, /31\. \.\.\./);
-   const individualOutput = { text: "", write(value) { this.text += value; } };
-   const individualAnswers = ["i", "1", "1", "manual", "manual/unknown", "inherit", "", "2", "2", "y"];
-  const individualAssignments = await promptForModelAssignments({
-    models,
-     previousAssignments: { explorer: "beta/model-4" },
-    output: individualOutput,
-    createInterface() { return { question() { return Promise.resolve(individualAnswers.shift()); }, close() {} }; },
-  });
-   assert.equal(individualAssignments.orchestrator, "alpha/model-1");
+    const individualOutput = { text: "", write(value) { this.text += value; } };
+    const individualAnswers = ["i", "1", "1", "manual", "manual/unknown", "inherit", "", "2", "2", "y"];
+   const individualPrompts = [];
+   const individualAssignments = await promptForModelAssignments({
+     models,
+      previousAssignments: { explorer: "beta/model-4" },
+     output: individualOutput,
+     createInterface() { return { question(prompt) { individualPrompts.push(prompt); return Promise.resolve(individualAnswers.shift()); }, close() {} }; },
+   });
+   assert.equal(individualPrompts[0], "Models: [a]ll inherit, all [s]ame, [i]ndividual, [r]euse previous, [k]skip: ");
+    assert.equal(individualAssignments.orchestrator, "alpha/model-1");
   assert.equal(individualAssignments["lead-programmer"], "manual/unknown");
   assert.equal(individualAssignments["creative-guy"], "inherit");
    assert.equal(individualAssignments.explorer, "beta/model-4");
