@@ -17,10 +17,14 @@ Audio communicates action, space, emotion, feedback, and priority. Define sonic 
 
 - Map player and world states to music, ambience, stingers, and layers: entry/exit trigger, transition rule, priority, persistence, and fallback. Do not leave state changes implied.
 - For each important event, specify trigger, asset or variation pool, cooldown, concurrency, spatial behavior, gain target, priority, ducking, and stop rule.
+- Define simultaneous-sound policy: ranked categories, maximum concurrent voices per category, what may layer, what ducks, and what steals or suppresses when budget is full. Critical player feedback and hazards outrank ambience and flourish.
+- Give competing critical cues distinct frequency ranges, timing, and spatial placement; check music, voice, UI, and effects for masking. Duck, thin, delay, or replace masking layers rather than raising every gain.
 - Specify when a sound starts, stops, layers, varies, ducks, persists, and yields to higher-priority sounds.
+- Build ambience as base bed, location detail, intermittent one-shots, and state layer. Specify entry, exit, crossfade, persistence, and interruption so location and danger changes remain readable without abrupt loops.
 - Avoid fatigue with controlled variation, cooldowns, concurrency limits, and mix priorities.
 - Music states and transitions should follow player context without masking critical gameplay feedback.
 - Keep volume categories, mix settings, subtitles, captions, visual alternatives, and separate critical-cue controls accessible; do not make audio sole carrier of urgency or success.
+- Provide mono output and reduced-sudden-loudness/normalization option. Keep critical cues intelligible in either mode and pair them with non-audio feedback.
 - For critical audio, define audible response under competing mix, ducking and interruption behavior, plus visual/haptic/text fallback when muted, unavailable, or masked.
 
 ## Production

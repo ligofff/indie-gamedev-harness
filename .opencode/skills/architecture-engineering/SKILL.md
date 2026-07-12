@@ -14,12 +14,15 @@ Architecture exists to make current behavior correct and changeable. Start from 
 - Prefer small APIs that expose required behavior over broad manager objects or global mutable state.
 - Make state transitions explicit. Hidden temporal coupling causes hard-to-reproduce game bugs.
 - Keep gameplay values in project-native data and keep data valid, versioned where needed, defaulted, and free of orphan references.
+- Review each boundary for owner, contract, lifecycle (create, initialize, use, teardown), failure path, and applicable frame, memory, loading, network, or content budget.
 
 ## Decisions
 
 - Reuse established patterns unless they block correctness or maintainability.
 - Evaluate engine-native capability, dependency cost, platform support, debugging, migration, and testability before adding technology.
 - Record a durable architectural decision only when code, configuration, and existing notes cannot explain a cross-cutting choice. Reuse project convention or ask where to record it.
+- If project already assigns stable requirement IDs, preserve them and link requirement, decision, implementation, and verification evidence; do not invent an ID scheme.
+- Order implementation by dependency: establish data, contracts, and lifecycle owners before dependent features; verify each layer before building on it.
 - Refactor in safe increments with a behavior-preserving check between steps.
 - Prefer reversible steps: isolate risky changes, preserve a rollback path, and verify behavior before irreversible data, API, or content migrations.
 - State contracts at boundaries: accepted inputs, ownership, outputs, failure behavior, and compatibility expectations.

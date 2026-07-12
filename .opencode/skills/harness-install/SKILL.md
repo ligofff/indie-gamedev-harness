@@ -24,6 +24,12 @@ Install this harness into OpenCode without replacing a project's own conventions
 
 Start from what exists: engine settings, package manifests, source layout, test commands, assets, comments, and project notes. Reuse project-native truth locations. Do not scaffold folders, documents, or process files merely because this harness can use them.
 
+- Audit usability as well as presence: can existing configuration, instructions, agents, skills, permissions, and validation actually support intended work?
+- Classify findings by impact: blockers that make behavior unsafe or unusable now, important gaps that prevent reliable adoption, and advisory improvements.
+- State each blocker, its evidence, affected behavior, and smallest safe remediation. Do not silently continue past a required dependency.
+- Preserve in-progress and completed work. Fill compatible gaps where useful; do not regenerate, rewrite, or reformat active work merely to fit harness conventions.
+- Report an adoption plan only when useful, ordered from blockers through optional improvements. Re-audit from current project facts after remediation.
+
 ## Removal
 
 Remove only files installed by this harness and configuration entries that reference them. Preserve user-modified installed files unless the user explicitly approves their removal. Confirm no active OpenCode configuration references a file before deleting it.

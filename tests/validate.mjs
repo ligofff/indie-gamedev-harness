@@ -1,10 +1,13 @@
 import { existsSync, lstatSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 
 const root = process.cwd();
 const openCodeDir = join(root, ".opencode");
 const agentsDir = join(openCodeDir, "agents");
 const skillsDir = join(openCodeDir, "skills");
+const generatedOpenCodeEntries = new Set([".gitignore", "node_modules", "package.json", "package-lock.json", "bun.lock"]);
+const legacyOpenCodeEntries = new Set(["commands", "rules", "plugins", "modules"]);
 const expectedAgents = new Map([
   ["orchestrator", "primary"],
   ["lead-programmer", "subagent"],
@@ -197,13 +200,23 @@ function validateSkills() {
   if (failed === failedBefore) pass(`skills: ${names.size} valid reusable skills found`);
 }
 
+function validateGeneratedOpenCodeEntries() {
+  const entries = [...generatedOpenCodeEntries].map((entry) => join(".opencode", entry));
+  const tracked = execFileSync("git", ["ls-files", "--", ...entries], { encoding: "utf8" })
+    .trim()
+    .split(/\r?\n/)
+    .filter(Boolean);
+  if (tracked.length > 0) {
+    fail(`generated .opencode entries tracked: ${tracked.join(", ")}`);
+    return;
+  }
+  pass("generated .opencode entries: untracked");
+}
+
 function validateOpenCodeEntries(directory = openCodeDir) {
   if (!existsSync(directory)) return fail(".opencode: directory missing");
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const file = join(directory, entry.name);
-    if (directory === openCodeDir && ["commands", "rules", "plugins", "modules", "node_modules", "package.json", "package-lock.json", ".gitignore"].includes(entry.name)) {
-      fail(`${relative(root, file)}: legacy runtime entry not allowed`);
-    }
     const details = lstatSync(file);
     if (details.isSymbolicLink()) {
       try {
@@ -214,6 +227,10 @@ function validateOpenCodeEntries(directory = openCodeDir) {
       }
       continue;
     }
+    if (directory === openCodeDir && legacyOpenCodeEntries.has(entry.name)) {
+      fail(`${relative(root, file)}: legacy runtime entry not allowed`);
+    }
+    if (directory === openCodeDir && generatedOpenCodeEntries.has(entry.name)) continue;
     if (details.isDirectory()) validateOpenCodeEntries(file);
   }
 }
@@ -257,6 +274,7 @@ function validateActiveFiles() {
   if (failed === failedBefore) pass("active files: no alternate-runtime or old-framework references");
 }
 
+validateGeneratedOpenCodeEntries();
 validateOpenCodeEntries();
 validateConfig();
 validateAgents();

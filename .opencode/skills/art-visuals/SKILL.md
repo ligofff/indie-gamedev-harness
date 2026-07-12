@@ -7,6 +7,13 @@ description: Use when setting visual direction, specifying or auditing game art,
 
 Visual direction serves readability, tone, and production reality. Define visual-language dimensions: desired player feeling, shape language, palette/value hierarchy, material and lighting rules, composition/camera behavior, motion/VFX character, reference qualities, and explicit exclusions.
 
+## Visual Language
+
+- Define mood by gameplay state, not one global adjective: exploration, threat, victory, failure, safe hub, and menu each need value, saturation, lighting, motion, and density rules that preserve priority.
+- Specify shape grammar for characters, threats, props, spaces, and UI: dominant geometry, silhouette cue, hero versus supporting forms, and emotional meaning. Apply same grammar across assets unless a deliberate contrast signals danger, faction, or interaction.
+- Make environments logically legible: structure follows climate, materials, labor, history, resource flow, and current use. Landmarks, wear, routes, and prop placement should explain navigation and story while supporting play.
+- Assign typography roles: display/brand, headings, body/dialogue, labels, and numeric/data. State hierarchy, weight, size/spacing behavior, contrast, language coverage, and fallback families; decorative faces never carry critical small text.
+
 ## Assets
 
 - Specify intended use, scale, camera distance, silhouette, pivot or origin, animation needs, dimensions, frame rate, texture/material budget, import constraints, naming, format, and source/license status.

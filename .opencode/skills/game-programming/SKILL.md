@@ -12,6 +12,8 @@ Implement gameplay as explicit, tunable, observable behavior.
 - Keep rules and tuning data separate where project architecture supports it. Values likely to change through playtesting belong in native data, resources, settings, or configuration.
 - Use delta time correctly. Define pause, time scale, fixed-step, and interpolation behavior deliberately.
 - Model state transitions explicitly. Emit events at system boundaries instead of coupling unrelated systems through direct internals.
+- Do not silently change approved design rules. Surface conflict and obtain explicit approval before intentional design deviation; keep approved change traceable in existing project records.
+- Define event payload provenance, simulation context, and applied modifiers. Event receiver owns resolution into local state or presentation; sender does not reach into receiver internals.
 - Keep input, simulation, presentation, persistence, and UI responsibilities distinct enough to test and debug.
 - Handle invalid data and missing references at trust boundaries; avoid silent corruption.
 - Translate raw input into explicit game intents. Define buffering, repeat, remapping, device loss, pause, and focus-loss behavior where relevant.
