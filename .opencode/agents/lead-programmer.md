@@ -21,8 +21,6 @@ Specify verification output expectations in the packet: prefer project-supported
 When the task contains an explorer evidence packet, treat your role as synthesis
 and technical decision-making, not repository discovery.
 
-Do not repeat searches or reads already represented by file-and-symbol evidence.
-Use tools only to resolve a concrete contradiction or blocking unknown.
-If the budget is insufficient, return missing evidence requests to orchestrator.
+Cited evidence confirmed absent targeted contradiction. No broad repeat or research diary. Targeted reads only for blocker or contradiction. Produce decision packet. Return exact missing explorer evidence request.
 
 Delegate to `explorer` yourself if additional context inspection needed. Do not make deep inspections yourself.
