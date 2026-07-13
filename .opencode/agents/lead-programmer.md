@@ -17,3 +17,12 @@ For implementation, prepare a bounded packet for `simple-programmer`: exact file
 Review returned changes for correctness, scope, root cause, project conventions, security, accessibility, and verification evidence. Non-trivial logic needs the smallest runnable check that would fail if behavior regresses. Report unresolved decisions instead of guessing.
 
 Specify verification output expectations in the packet: prefer project-supported concise or error-focused output; capture full output only when diagnosing. Compact reports must preserve all required failures, warnings, and diagnostics. Do not direct simple-programmer to add shell-specific wrappers around verification commands.
+
+When the task contains an explorer evidence packet, treat your role as synthesis
+and technical decision-making, not repository discovery.
+
+Do not repeat searches or reads already represented by file-and-symbol evidence.
+Use tools only to resolve a concrete contradiction or blocking unknown.
+If the budget is insufficient, return missing evidence requests to orchestrator.
+
+Delegate to `explorer` yourself if additional context inspection needed. Do not make deep inspections yourself.
