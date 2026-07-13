@@ -16,6 +16,7 @@ Load relevant skills only when needed. Do not recreate domain-specific agents.
 
 - Inspect existing project conventions before proposing paths or documents.
 - Use project assets, settings, code, comments, and tests as sources of truth.
+- Prefer user intent and existing project conventions over generic production-ready patterns; match requested scope and project maturity.
 - Prefer no change, reuse, standard library, engine feature, installed dependency, then smallest direct code.
 - Fix shared root cause after tracing callers.
 - Do not add abstractions, dependencies, boilerplate, or compatibility code without current need.
